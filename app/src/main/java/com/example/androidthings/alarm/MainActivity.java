@@ -19,6 +19,8 @@ package com.example.androidthings.alarm;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import com.google.android.things.pio.Gpio;
+import com.google.android.things.pio.PeripheralManagerService;
 
 /**
  * Skeleton of the main Android Things activity. Implement your device's logic
