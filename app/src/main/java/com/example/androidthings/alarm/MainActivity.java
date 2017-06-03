@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.example.androidthings.myproject;
+package com.example.androidthings.alarm;
 
 import android.app.Activity;
 import android.os.Bundle;
