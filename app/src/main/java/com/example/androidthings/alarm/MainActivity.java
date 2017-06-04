@@ -74,8 +74,9 @@ public class MainActivity extends Activity {
             mButtonGpio = service.openGpio(BUTTON_PIN_NAME);
             // Step 2. Configure as an input.
             mButtonGpio.setDirection(Gpio.DIRECTION_IN);
+            mButtonGpio.setActiveType(Gpio.ACTIVE_LOW);
             // Step 3. Enable edge trigger events.
-            mButtonGpio.setEdgeTriggerType(Gpio.EDGE_FALLING);
+            mButtonGpio.setEdgeTriggerType(Gpio.EDGE_BOTH);
             // Step 4. Register an event callback.
             mButtonGpio.registerGpioCallback(mCallback);
 
@@ -103,7 +104,15 @@ public class MainActivity extends Activity {
     private GpioCallback mCallback = new GpioCallback() {
         @Override
         public boolean onGpioEdge(Gpio gpio) {
-            Log.i(TAG, "GPIO changed, button pressed");
+            try {
+                if (gpio.getValue()) {
+                    Log.i(TAG, "Button Pressed");
+                } else {
+                    Log.i(TAG, "Button Not Pressed");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             // Step 5. Return true to keep callback active.
             return true;
