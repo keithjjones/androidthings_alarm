@@ -81,11 +81,17 @@ public class MainActivity extends Activity {
 
             // Step 1. Create GPIO connection.
             mRedLedGpio = service.openGpio(RED_LED_PIN_NAME);
+            mYellowLedGpio = service.openGpio(YELLOW_LED_PIN_NAME);
+            mGreenLedGpio = service.openGpio(GREEN_LED_PIN_NAME);
             // Step 2. Configure as an output.
             mRedLedGpio.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+            mYellowLedGpio.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
+            mGreenLedGpio.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
 
             // Step 4. Repeat using a handler.
             mHandler.post(mBlinkRedRunnable);
+            mHandler.post(mBlinkYellowRunnable);
+            mHandler.post(mBlinkGreenRunnable);
 
 
         } catch (IOException e) {
@@ -118,6 +124,46 @@ public class MainActivity extends Activity {
 
                 // Step 4. Schedule another event after delay.
                 mHandler.postDelayed(mBlinkRedRunnable, INTERVAL_BETWEEN_BLINKS_MS);
+            } catch (IOException e) {
+                Log.e(TAG, "Error on PeripheralIO API", e);
+            }
+        }
+    };
+
+    private Runnable mBlinkYellowRunnable = new Runnable() {
+        @Override
+        public void run() {
+            // Exit if the GPIO is already closed
+            if (mYellowLedGpio == null) {
+                return;
+            }
+
+            try {
+                // Step 3. Toggle the LED state
+                mYellowLedGpio.setValue(!mYellowLedGpio.getValue());
+
+                // Step 4. Schedule another event after delay.
+                mHandler.postDelayed(mBlinkYellowRunnable, INTERVAL_BETWEEN_BLINKS_MS);
+            } catch (IOException e) {
+                Log.e(TAG, "Error on PeripheralIO API", e);
+            }
+        }
+    };
+
+    private Runnable mBlinkGreenRunnable = new Runnable() {
+        @Override
+        public void run() {
+            // Exit if the GPIO is already closed
+            if (mGreenLedGpio == null) {
+                return;
+            }
+
+            try {
+                // Step 3. Toggle the LED state
+                mGreenLedGpio.setValue(!mGreenLedGpio.getValue());
+
+                // Step 4. Schedule another event after delay.
+                mHandler.postDelayed(mBlinkGreenRunnable, INTERVAL_BETWEEN_BLINKS_MS);
             } catch (IOException e) {
                 Log.e(TAG, "Error on PeripheralIO API", e);
             }
