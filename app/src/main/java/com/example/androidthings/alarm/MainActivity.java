@@ -48,6 +48,8 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
+        PeripheralManagerService service = new PeripheralManagerService();
+        Log.d(TAG, "Available GPIO: " + service.getGpioList());
     }
 
     @Override
