@@ -24,6 +24,14 @@ import com.google.android.things.pio.Gpio;
 import com.google.android.things.pio.GpioCallback;
 import com.google.android.things.pio.PeripheralManagerService;
 
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+
 import java.io.IOException;
 
 /**
@@ -46,7 +54,8 @@ import java.io.IOException;
  *
  */
 /* Adapted from https://developer.android.com/things/training/first-device/peripherals.html */
-public class MainActivity extends Activity {
+/* Adapted from https://medium.com/@abhi007tyagi/android-things-led-control-via-mqtt-b7509576c135 */
+public class MainActivity extends Activity implements MqttCallback {
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String BUTTON_PIN_NAME = "BCM6";
     private static final String RED_LED_PIN_NAME = "BCM21";
@@ -78,7 +87,7 @@ public class MainActivity extends Activity {
             // Step 3. Enable edge trigger events.
             mButtonGpio.setEdgeTriggerType(Gpio.EDGE_BOTH);
             // Step 4. Register an event callback.
-            mButtonGpio.registerGpioCallback(mCallback);
+            mButtonGpio.registerGpioCallback(mButtonCallback);
 
             // Step 1. Create GPIO connection.
             mRedLedGpio = service.openGpio(RED_LED_PIN_NAME);
@@ -90,18 +99,35 @@ public class MainActivity extends Activity {
             mGreenLedGpio.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
 
             // Step 4. Repeat using a handler.
-            mHandler.post(mBlinkRedRunnable);
-            mHandler.post(mBlinkYellowRunnable);
-            mHandler.post(mBlinkGreenRunnable);
+//            mHandler.post(mBlinkRedRunnable);
+//            mHandler.post(mBlinkYellowRunnable);
+//            mHandler.post(mBlinkGreenRunnable);
 
 
         } catch (IOException e) {
             Log.e(TAG, "Error on PeripheralIO API", e);
         }
+        try {
+            String username = "csc844";
+            String password = "844password";
+            MqttClient client = new MqttClient("tcp://75.101.131.202:16148", "AndroidThingAlarm", new MemoryPersistence());
+            MqttConnectOptions options = new MqttConnectOptions();
+            options.setUserName(username);
+            options.setPassword(password.toCharArray());
+            client.setCallback(this);
+            client.connect(options);
+
+            String topic = "alarm/siren";
+            client.subscribe(topic);
+
+        } catch (MqttException e) {
+            Log.e(TAG, "Error on MQTT Connection", e);
+            e.printStackTrace();
+        }
     }
 
     // Step 4. Register an event callback.
-    private GpioCallback mCallback = new GpioCallback() {
+    private GpioCallback mButtonCallback = new GpioCallback() {
         @Override
         public boolean onGpioEdge(Gpio gpio) {
             try {
@@ -180,13 +206,38 @@ public class MainActivity extends Activity {
     };
 
     @Override
+    public void connectionLost(Throwable cause) {
+        Log.d(TAG, "MQTT connection lost....");
+    }
+
+    @Override
+    public void messageArrived(String topic, MqttMessage message) throws Exception {
+        String payload = new String(message.getPayload());
+        Log.d(TAG, payload);
+        try {
+            // Step 3. Toggle the LED state
+            mGreenLedGpio.setValue(!mGreenLedGpio.getValue());
+
+            // Step 4. Schedule another event after delay.
+            mHandler.postDelayed(mBlinkGreenRunnable, INTERVAL_BETWEEN_BLINKS_MS);
+        } catch (IOException e) {
+            Log.e(TAG, "Error on PeripheralIO API", e);
+        }
+    }
+
+    @Override
+    public void deliveryComplete(IMqttDeliveryToken token) {
+        Log.d(TAG, "MQTT Delivery Complete....");
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
 
         // Step 6. Close the resource
         if (mButtonGpio != null) {
-            mButtonGpio.unregisterGpioCallback(mCallback);
+            mButtonGpio.unregisterGpioCallback(mButtonCallback);
             try {
                 mButtonGpio.close();
             } catch (IOException e) {
