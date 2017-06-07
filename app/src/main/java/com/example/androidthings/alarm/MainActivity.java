@@ -110,7 +110,7 @@ public class MainActivity extends Activity implements MqttCallback {
         try {
             String username = "csc844";
             String password = "844password";
-            MqttClient client = new MqttClient("tcp://75.101.131.202:16148", "AndroidThingAlarm", new MemoryPersistence());
+            MqttClient client = new MqttClient("tcp://m11.cloudmqtt.com:16148", "AndroidThingAlarm", new MemoryPersistence());
             MqttConnectOptions options = new MqttConnectOptions();
             options.setUserName(username);
             options.setPassword(password.toCharArray());
