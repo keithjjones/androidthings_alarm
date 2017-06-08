@@ -71,6 +71,11 @@ public class MainActivity extends Activity implements MqttCallback {
     private Gpio mYellowLedGpio;
     private Gpio mGreenLedGpio;
 
+    String username = "csc844";
+    String password = "844password";
+    MqttClient client;
+    MqttConnectOptions options;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,8 +115,8 @@ public class MainActivity extends Activity implements MqttCallback {
         try {
             String username = "csc844";
             String password = "844password";
-            MqttClient client = new MqttClient("tcp://m11.cloudmqtt.com:16148", "AndroidThingAlarm", new MemoryPersistence());
-            MqttConnectOptions options = new MqttConnectOptions();
+            client = new MqttClient("tcp://m11.cloudmqtt.com:16148", "AndroidThingAlarm", new MemoryPersistence());
+            options = new MqttConnectOptions();
             options.setUserName(username);
             options.setPassword(password.toCharArray());
             client.setCallback(this);
@@ -130,11 +135,20 @@ public class MainActivity extends Activity implements MqttCallback {
     private GpioCallback mButtonCallback = new GpioCallback() {
         @Override
         public boolean onGpioEdge(Gpio gpio) {
+            String content;
             try {
                 if (gpio.getValue()) {
                     Log.i(TAG, "Button Pressed");
+                    content = "ON";
                 } else {
                     Log.i(TAG, "Button Not Pressed");
+                    content = "OFF";
+                }
+                MqttMessage message = new MqttMessage(content.getBytes());
+                try {
+                    client.publish("alarm/switch", message);
+                } catch (MqttException e) {
+                    Log.e(TAG, "Error on MQTT publish", e);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -234,6 +248,12 @@ public class MainActivity extends Activity implements MqttCallback {
     protected void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "onDestroy");
+
+        try {
+            client.disconnect();
+        } catch (MqttException e) {
+            Log.e(TAG, "Error closing MQTT", e);
+        }
 
         // Step 6. Close the resource
         if (mButtonGpio != null) {
