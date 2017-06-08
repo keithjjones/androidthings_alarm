@@ -33,6 +33,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Skeleton of the main Android Things activity. Implement your device's logic
@@ -159,65 +160,65 @@ public class MainActivity extends Activity implements MqttCallback {
         }
     };
 
-    private Runnable mBlinkRedRunnable = new Runnable() {
-        @Override
-        public void run() {
-            // Exit if the GPIO is already closed
-            if (mRedLedGpio == null) {
-                return;
-            }
-
-            try {
-                // Step 3. Toggle the LED state
-                mRedLedGpio.setValue(!mRedLedGpio.getValue());
-
-                // Step 4. Schedule another event after delay.
-                mHandler.postDelayed(mBlinkRedRunnable, INTERVAL_BETWEEN_BLINKS_MS);
-            } catch (IOException e) {
-                Log.e(TAG, "Error on PeripheralIO API", e);
-            }
-        }
-    };
-
-    private Runnable mBlinkYellowRunnable = new Runnable() {
-        @Override
-        public void run() {
-            // Exit if the GPIO is already closed
-            if (mYellowLedGpio == null) {
-                return;
-            }
-
-            try {
-                // Step 3. Toggle the LED state
-                mYellowLedGpio.setValue(!mYellowLedGpio.getValue());
-
-                // Step 4. Schedule another event after delay.
-                mHandler.postDelayed(mBlinkYellowRunnable, INTERVAL_BETWEEN_BLINKS_MS);
-            } catch (IOException e) {
-                Log.e(TAG, "Error on PeripheralIO API", e);
-            }
-        }
-    };
-
-    private Runnable mBlinkGreenRunnable = new Runnable() {
-        @Override
-        public void run() {
-            // Exit if the GPIO is already closed
-            if (mGreenLedGpio == null) {
-                return;
-            }
-
-            try {
-                // Step 3. Toggle the LED state
-                mGreenLedGpio.setValue(!mGreenLedGpio.getValue());
-
-                // Step 4. Schedule another event after delay.
-                mHandler.postDelayed(mBlinkGreenRunnable, INTERVAL_BETWEEN_BLINKS_MS);
-            } catch (IOException e) {
-                Log.e(TAG, "Error on PeripheralIO API", e);
-            }
-        }
-    };
+//    private Runnable mBlinkRedRunnable = new Runnable() {
+//        @Override
+//        public void run() {
+//            // Exit if the GPIO is already closed
+//            if (mRedLedGpio == null) {
+//                return;
+//            }
+//
+//            try {
+//                // Step 3. Toggle the LED state
+//                mRedLedGpio.setValue(!mRedLedGpio.getValue());
+//
+//                // Step 4. Schedule another event after delay.
+//                mHandler.postDelayed(mBlinkRedRunnable, INTERVAL_BETWEEN_BLINKS_MS);
+//            } catch (IOException e) {
+//                Log.e(TAG, "Error on PeripheralIO API", e);
+//            }
+//        }
+//    };
+//
+//    private Runnable mBlinkYellowRunnable = new Runnable() {
+//        @Override
+//        public void run() {
+//            // Exit if the GPIO is already closed
+//            if (mYellowLedGpio == null) {
+//                return;
+//            }
+//
+//            try {
+//                // Step 3. Toggle the LED state
+//                mYellowLedGpio.setValue(!mYellowLedGpio.getValue());
+//
+//                // Step 4. Schedule another event after delay.
+//                mHandler.postDelayed(mBlinkYellowRunnable, INTERVAL_BETWEEN_BLINKS_MS);
+//            } catch (IOException e) {
+//                Log.e(TAG, "Error on PeripheralIO API", e);
+//            }
+//        }
+//    };
+//
+//    private Runnable mBlinkGreenRunnable = new Runnable() {
+//        @Override
+//        public void run() {
+//            // Exit if the GPIO is already closed
+//            if (mGreenLedGpio == null) {
+//                return;
+//            }
+//
+//            try {
+//                // Step 3. Toggle the LED state
+//                mGreenLedGpio.setValue(!mGreenLedGpio.getValue());
+//
+//                // Step 4. Schedule another event after delay.
+//                mHandler.postDelayed(mBlinkGreenRunnable, INTERVAL_BETWEEN_BLINKS_MS);
+//            } catch (IOException e) {
+//                Log.e(TAG, "Error on PeripheralIO API", e);
+//            }
+//        }
+//    };
 
     @Override
     public void connectionLost(Throwable cause) {
@@ -229,11 +230,33 @@ public class MainActivity extends Activity implements MqttCallback {
         String payload = new String(message.getPayload());
         Log.d(TAG, payload);
         try {
+            switch(payload.toUpperCase()) {
+                case "GREEN-ON":
+                    mGreenLedGpio.setValue(true);
+                    Log.d(TAG, "Turning Green ON....");
+                    break;
+                case "GREEN-OFF":
+                    mGreenLedGpio.setValue(false);
+                    Log.d(TAG, "Turning Green OFF....");
+                    break;
+                case "YELLOW-ON":
+                    mYellowLedGpio.setValue(true);
+                    Log.d(TAG, "Turning Yellow ON....");
+                    break;
+                case "YELLOW-OFF":
+                    mYellowLedGpio.setValue(false);
+                    Log.d(TAG, "Turning Yellow OFF....");
+                    break;
+                case "RED-ON":
+                    mRedLedGpio.setValue(true);
+                    Log.d(TAG, "Turning Red ON....");
+                    break;
+                case "RED-OFF":
+                    mRedLedGpio.setValue(false);
+                    Log.d(TAG, "Turning Yellow OFF....");
+                    break;
+            }
             // Step 3. Toggle the LED state
-            mGreenLedGpio.setValue(!mGreenLedGpio.getValue());
-
-            // Step 4. Schedule another event after delay.
-            mHandler.postDelayed(mBlinkGreenRunnable, INTERVAL_BETWEEN_BLINKS_MS);
         } catch (IOException e) {
             Log.e(TAG, "Error on PeripheralIO API", e);
         }
