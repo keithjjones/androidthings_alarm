@@ -113,22 +113,25 @@ public class MainActivity extends Activity implements MqttCallback {
         } catch (IOException e) {
             Log.e(TAG, "Error on PeripheralIO API", e);
         }
-        try {
-            String username = "csc844";
-            String password = "844password";
-            client = new MqttClient("ssl://m11.cloudmqtt.com:26148", "AndroidThingAlarm", new MemoryPersistence());
-            options = new MqttConnectOptions();
-            options.setUserName(username);
-            options.setPassword(password.toCharArray());
-            client.setCallback(this);
-            client.connect(options);
+        // Keep trying until we get a connection
+        while (true) {
+            try {
+                String username = "csc844";
+                String password = "844password";
+                client = new MqttClient("ssl://m11.cloudmqtt.com:26148", "AndroidThingAlarm", new MemoryPersistence());
+                options = new MqttConnectOptions();
+                options.setUserName(username);
+                options.setPassword(password.toCharArray());
+                client.setCallback(this);
+                client.connect(options);
 
-            String topic = "alarm/siren";
-            client.subscribe(topic);
-
-        } catch (MqttException e) {
-            Log.e(TAG, "Error on MQTT Connection", e);
-            e.printStackTrace();
+                String topic = "alarm/siren";
+                client.subscribe(topic);
+                break;
+            } catch (MqttException e) {
+                Log.e(TAG, "Error on MQTT Connection", e);
+                e.printStackTrace();
+            }
         }
     }
 
